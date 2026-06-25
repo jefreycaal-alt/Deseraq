@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deseraq — Design for Designers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════════
+   TOKENS  — Retro-Futuristic anchor
+   Surface: #050008 deep violet-black
+   Type:    Orbitron (display) + Space Mono (body)
+   Neon:    purple #8B5CF6  ×  orange #F97316
+   Glow:    committed on key elements
+═══════════════════════════════════════════ */
+:root {
+  --bg:      #050008;
+  --bg2:     #08000f;
+  --bg3:     #0e0020;
+  --sf:      rgba(255,255,255,.026);
+  --sf-h:    rgba(255,255,255,.05);
+
+  --p2: #3B1D8B;
+  --p3: #6D28D9;
+  --p4: #8B5CF6;
+  --p5: #A78BFA;
+  --p6: #C4B5FD;
+
+  --o3: #C2410C;
+  --o4: #EA580C;
+  --o5: #F97316;
+  --o6: #FB923C;
+
+  --t:  #EDE9FF;
+  --t2: rgba(237,233,255,.55);
+  --t3: rgba(237,233,255,.26);
+
+  --b:  rgba(139,92,246,.17);
+  --bo: rgba(249,115,22,.2);
+
+  --fd: 'Orbitron', sans-serif;
+  --fb: 'Space Mono', monospace;
+  --r:  8px;
+  --rl: 16px;
+}
+
+/* ── RESET ──────────────────────────────────── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { scroll-behavior:smooth; font-size:16px }
+body {
+  background: var(--bg);
+  color: var(--t);
+  font-family: var(--fb);
+  overflow-x: hidden;
+  cursor: none;
+}
+a { color:inherit; text-decoration:none }
+button { font-family:var(--fb) }
+canvas { display:block; background:transparent }
+
+/* ── DOT GRID + AMBIENT ─────────────────────── */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(rgba(139,92,246,.11) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events:none; z-index:0;
+}
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 65% 50% at 12% 6%,  rgba(109,40,217,.12) 0%, transparent 68%),
+    radial-gradient(ellipse 50% 38% at 88% 94%, rgba(194,65,12,.09)  0%, transparent 62%);
+  pointer-events:none; z-index:0;
+}
+
+/* ── CURSOR ─────────────────────────────────── */
+#cur, #cur-r {
+  position:fixed; border-radius:50%;
+  pointer-events:none; z-index:9999;
+  transform:translate(-50%,-50%);
+}
+#cur {
+  width:7px; height:7px;
+  background: var(--p5);
+  box-shadow: 0 0 10px var(--p4);
+  transition: width .15s, height .15s, background .15s;
+  mix-blend-mode: screen;
+}
+#cur-r {
+  width:34px; height:34px;
+  border:1px solid rgba(167,139,250,.4);
+  z-index:9998;
+  transition: width .22s, height .22s, border-color .22s;
+}
+@media (hover:none) { #cur,#cur-r { display:none } * { cursor:auto !important } }
+
+/* ── NAV ────────────────────────────────────── */
+#nav {
+  position:fixed; top:0; left:0; right:0; z-index:900;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 56px; height:66px;
+  border-bottom:1px solid transparent;
+  transition:background .35s, backdrop-filter .35s, border-color .35s;
+}
+#nav.sc {
+  background:rgba(5,0,8,.82);
+  backdrop-filter:blur(24px) saturate(1.5);
+  -webkit-backdrop-filter:blur(24px) saturate(1.5);
+  border-bottom-color: var(--b);
+}
+.n-logo {
+  font-family:var(--fd); font-size:.95rem; font-weight:700; letter-spacing:.2em;
+  background:linear-gradient(90deg, var(--p5), var(--o5));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  text-shadow: none;
+}
+.n-links {
+  display:flex; gap:38px; list-style:none;
+  position:absolute; left:50%; transform:translateX(-50%);
+}
+.n-links a {
+  font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--t2); transition:color .2s;
+}
+.n-links a:hover { color:var(--t) }
+.n-cta {
+  font-size:.62rem; letter-spacing:.13em; text-transform:uppercase;
+  padding:10px 22px; border:1px solid var(--b); border-radius:var(--r);
+  background:transparent; color:var(--t2); cursor:none;
+  transition:border-color .2s, color .2s, background .2s;
+}
+.n-cta:hover { border-color:var(--p4); color:var(--t); background:rgba(139,92,246,.07) }
+
+/* ── HERO ───────────────────────────────────── */
+#hero {
+  position:relative; width:100%; height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+/* CRT scanlines on hero — retro-futuristic texture */
+#hero::after {
+  content:'';
+  position:absolute; inset:0; z-index:3; pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,.07) 2px, rgba(0,0,0,.07) 4px
+  );
+}
+#hero-cvs { position:absolute; inset:0; width:100%; height:100%; z-index:1 }
+
+.hero-inner {
+  position:relative; z-index:4;
+  text-align:center; display:flex; flex-direction:column;
+  align-items:center; gap:26px; pointer-events:none;
+}
+.hero-kicker {
+  font-size:.6rem; letter-spacing:.3em; text-transform:uppercase; color:var(--o5);
+  display:flex; align-items:center; gap:16px;
+}
+.hero-kicker::before, .hero-kicker::after {
+  content:''; width:40px; height:1px;
+  background:currentColor; opacity:.5;
+}
+.hero-title {
+  font-family:var(--fd);
+  font-size:clamp(4.5rem,14vw,12rem);
+  font-weight:900; letter-spacing:.08em; line-height:.86;
+  background:linear-gradient(155deg,
+    #C4B5FD 0%, #A78BFA 24%, #8B5CF6 48%,
+    #F97316 78%, #FB923C 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  filter:drop-shadow(0 0 70px rgba(139,92,246,.28));
+}
+.hero-sub {
+  font-size:clamp(.72rem,1.3vw,.9rem);
+  font-style:italic; color:var(--t2); letter-spacing:.08em;
+}
+.hero-btns {
+  display:flex; gap:14px; pointer-events:all; margin-top:8px;
+}
+
+/* ── BUTTONS ────────────────────────────────── */
+.btn-p, .btn-o {
+  font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:13px 30px; border-radius:var(--r); cursor:none;
+  transition:box-shadow .25s, opacity .2s; position:relative; overflow:hidden;
+}
+.btn-p {
+  background:linear-gradient(135deg, var(--p3), var(--o4));
+  border:none; color:#fff;
+}
+.btn-p::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);
+  opacity:0; transition:opacity .2s;
+}
+.btn-p:hover {
+  box-shadow:0 0 30px rgba(109,40,217,.55), 0 0 12px rgba(234,88,12,.35);
+  opacity:.92;
+}
+.btn-p:hover::after { opacity:1 }
+.btn-o {
+  background:transparent; border:1px solid var(--b); color:var(--t2);
+}
+.btn-o:hover { border-color:var(--p5); color:var(--t); box-shadow:0 0 20px rgba(139,92,246,.2) }
+
+.scroll-hint {
+  position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:9px; z-index:4;
+}
+.scroll-hint span { font-size:.52rem; letter-spacing:.28em; text-transform:uppercase; color:var(--t3) }
+.s-line {
+  width:1px; height:48px;
+  background:linear-gradient(to bottom, var(--p4), transparent);
+  animation:spulse 2.2s ease-in-out infinite;
+}
+@keyframes spulse { 0%,100%{opacity:.25;transform:scaleY(1)} 50%{opacity:.9;transform:scaleY(.62)} }
+
+/* ── SECTION BASE ───────────────────────────── */
+.sec {
+  max-width:1240px; margin:0 auto;
+  padding:112px 56px; position:relative; z-index:1;
+}
+.sh { margin-bottom:64px }
+.sn {
+  display:block; font-size:.58rem; letter-spacing:.32em;
+  text-transform:uppercase; color:var(--o5); margin-bottom:18px;
+}
+.st {
+  font-family:var(--fd);
+  font-size:clamp(1.7rem,3.6vw,3rem);
+  font-weight:700; line-height:1.12; letter-spacing:.04em;
+}
+.gt {
+  background:linear-gradient(90deg, var(--p5), var(--o5));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* ── FADE-UP ────────────────────────────────── */
+.fu { opacity:0; transform:translateY(32px); transition:opacity .75s ease, transform .75s ease }
+.fu.vis { opacity:1; transform:translateY(0) }
+
+/* ── SEPARATOR ──────────────────────────────── */
+.sep-w { position:relative; z-index:1 }
+.sep {
+  display:block; border:none; height:1px;
+  background:linear-gradient(90deg, transparent, var(--b) 28%, var(--b) 72%, transparent);
+  max-width:1240px; margin:0 auto;
+}
+
+/* ══════════════════════════════════════════════
+   WHAT IS DESERAQ
+══════════════════════════════════════════════ */
+.what-g {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:76px; align-items:center;
+}
+.what-big {
+  font-size:clamp(.95rem,1.9vw,1.28rem); line-height:1.78;
+  color:var(--t); margin-bottom:26px;
+}
+.what-body {
+  font-size:.78rem; line-height:1.88; color:var(--t2); margin-bottom:40px;
+}
+.pills { display:flex; flex-wrap:wrap; gap:10px }
+.pill {
+  font-size:.6rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:7px 16px; border:1px solid var(--b); border-radius:100px;
+  color:var(--t2); cursor:none;
+  transition:border-color .2s, color .2s, background .2s, box-shadow .2s;
+}
+.pill:hover {
+  border-color:var(--p4); color:var(--p5);
+  background:rgba(139,92,246,.08);
+  box-shadow:0 0 12px rgba(139,92,246,.18);
+}
+.what-vis {
+  border-radius:var(--rl); overflow:hidden;
+  border:1px solid var(--b); background:var(--bg2);
+  aspect-ratio:5/3; position:relative;
+}
+.what-vis::before {
+  content:''; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(139,92,246,.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(249,115,22,.05) 0%, transparent 50%);
+}
+#osc-svg { width:100%; height:100%; display:block }
+
+/* ══════════════════════════════════════════════
+   HOW TO USE
+══════════════════════════════════════════════ */
+.how-g {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:76px; align-items:center;
+}
+.how-vis {
+  aspect-ratio:1; border-radius:var(--rl); overflow:hidden;
+  border:1px solid var(--b); background:var(--bg2);
+}
+#hex-cvs { width:100%; height:100% }
+
+.steps { display:flex; flex-direction:column; gap:40px }
+.step  { display:flex; gap:22px; align-items:flex-start }
+.step-n {
+  font-family:var(--fd); font-size:.6rem; font-weight:700;
+  color:var(--o5); letter-spacing:.1em;
+  flex-shrink:0; min-width:42px; margin-top:4px;
+}
+.step-b h3 {
+  font-family:var(--fd); font-size:.92rem; font-weight:600;
+  letter-spacing:.05em; color:var(--t); margin-bottom:10px;
+}
+.step-b p { font-size:.74rem; line-height:1.84; color:var(--t2) }
+.s-div {
+  width:1px; height:30px;
+  background:linear-gradient(to bottom, var(--b), transparent);
+  margin-left:22px;
+}
+
+/* ══════════════════════════════════════════════
+   USERS
+══════════════════════════════════════════════ */
+.users-g {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:18px;
+}
+.u-card {
+  padding:30px 24px; background:var(--sf);
+  border:1px solid var(--b); border-radius:var(--rl);
+  cursor:none; transition:transform .3s, border-color .3s, background .3s, box-shadow .3s;
+}
+.u-card:hover {
+  transform:translateY(-6px);
+  border-color:rgba(139,92,246,.38);
+  background:rgba(139,92,246,.06);
+  box-shadow:0 8px 32px rgba(109,40,217,.2);
+}
+.u-icon {
+  width:40px; height:40px; border-radius:var(--r);
+  background:linear-gradient(135deg,rgba(109,40,217,.3),rgba(194,65,12,.18));
+  border:1px solid var(--b);
+  display:flex; align-items:center; justify-content:center; margin-bottom:20px;
+}
+.u-icon svg {
+  width:19px; height:19px;
+  stroke:var(--p5); fill:none; stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.u-card h3 {
+  font-family:var(--fd); font-size:.76rem; font-weight:600;
+  letter-spacing:.06em; color:var(--t); margin-bottom:11px;
+}
+.u-card p { font-size:.7rem; line-height:1.76; color:var(--t2) }
+
+/* ══════════════════════════════════════════════
+   BLOG
+══════════════════════════════════════════════ */
+.blog-g { display:grid; grid-template-columns:repeat(3,1fr); gap:20px }
+.b-card {
+  border:1px solid var(--b); border-radius:var(--rl);
+  overflow:hidden; background:var(--sf);
+  cursor:none; transition:transform .3s, border-color .3s, box-shadow .3s;
+}
+.b-card:hover {
+  transform:translateY(-4px);
+  border-color:rgba(249,115,22,.3);
+  box-shadow:0 8px 28px rgba(194,65,12,.18);
+}
+.b-thumb {
+  width:100%; aspect-ratio:16/9;
+  background:var(--bg2); position:relative; overflow:hidden;
+}
+.b-t1 {
+  background:
+    radial-gradient(ellipse at 26% 74%, rgba(109,40,217,.5) 0%, transparent 58%),
+    radial-gradient(ellipse at 74% 26%, rgba(194,65,12,.38) 0%, transparent 58%),
+    var(--bg2);
+}
+.b-t2 {
+  background:
+    linear-gradient(135deg, rgba(139,92,246,.2) 0%, rgba(249,115,22,.18) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 8px,
+      rgba(139,92,246,.07) 8px, rgba(139,92,246,.07) 9px),
+    var(--bg2);
+}
+.b-t3 {
+  background:
+    conic-gradient(from 180deg at 50% 50%,
+      rgba(109,40,217,.32) 0deg, rgba(234,88,12,.24) 120deg,
+      rgba(109,40,217,.1) 240deg, rgba(109,40,217,.32) 360deg),
+    var(--bg2);
+}
+.b-tag {
+  position:absolute; bottom:10px; left:10px;
+  font-size:.56rem; letter-spacing:.16em; text-transform:uppercase;
+  padding:4px 12px; background:rgba(5,0,8,.7);
+  border:1px solid var(--b); border-radius:100px;
+  color:var(--o5); backdrop-filter:blur(8px);
+}
+.b-body { padding:24px 20px }
+.b-date { font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); margin-bottom:9px }
+.b-title {
+  font-family:var(--fd); font-size:.8rem; font-weight:600;
+  letter-spacing:.03em; color:var(--t); line-height:1.46; margin-bottom:12px;
+}
+.b-ex { font-size:.68rem; line-height:1.74; color:var(--t2) }
+
+/* ══════════════════════════════════════════════
+   PRICES
+══════════════════════════════════════════════ */
+.prices-g { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:start }
+.p-card {
+  padding:36px 32px; background:var(--sf);
+  border:1px solid var(--b); border-radius:var(--rl);
+  cursor:none; position:relative; overflow:hidden;
+  transition:transform .3s, box-shadow .3s;
+}
+.p-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--b); transition:background .4s;
+}
+.p-card:hover { transform:translateY(-6px); box-shadow:0 10px 40px rgba(5,0,8,.5) }
+.p-card.feat { border-color:rgba(139,92,246,.44); background:rgba(109,40,217,.07) }
+.p-card.feat::before { background:linear-gradient(90deg, var(--p3), var(--o4)) }
+.p-badge {
+  font-size:.56rem; letter-spacing:.16em; text-transform:uppercase;
+  padding:4px 12px; display:inline-block; margin-bottom:20px;
+  background:linear-gradient(135deg, var(--p3), var(--o4));
+  border-radius:100px; color:#fff;
+}
+.p-name {
+  font-family:var(--fd); font-size:.72rem; font-weight:600;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--t); margin-bottom:14px;
+}
+.p-amt { margin-bottom:26px }
+.p-amt .am { font-family:var(--fd); font-size:2.9rem; font-weight:900; line-height:1; color:var(--t) }
+.p-amt .per { font-size:.62rem; color:var(--t3); letter-spacing:.1em }
+.p-desc {
+  font-size:.7rem; line-height:1.76; color:var(--t2);
+  margin-bottom:26px; padding-bottom:26px; border-bottom:1px solid var(--b);
+}
+.p-feats { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px }
+.p-feats li {
+  font-size:.68rem; color:var(--t2);
+  display:flex; align-items:center; gap:12px; line-height:1.5;
+}
+.p-feats li::before {
+  content:''; display:block; width:14px; height:14px; flex-shrink:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5L13 5' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.p-btn {
+  width:100%; font-family:var(--fb); font-size:.64rem; letter-spacing:.1em;
+  text-transform:uppercase; padding:12px 20px; border-radius:var(--r);
+  cursor:none; transition:opacity .2s, box-shadow .25s; display:block; text-align:center;
+}
+.p-btn:hover { opacity:.86 }
+.p-btn-f {
+  background:linear-gradient(135deg, var(--p3), var(--o4));
+  border:none; color:#fff;
+}
+.p-btn-f:hover { box-shadow:0 0 24px rgba(109,40,217,.5), 0 0 10px rgba(234,88,12,.3) }
+.p-btn-o { background:transparent; border:1px solid var(--b); color:var(--t2) }
+.p-btn-o:hover { border-color:var(--p4); color:var(--t) }
+
+/* ══════════════════════════════════════════════
+   DOWNLOAD
+══════════════════════════════════════════════ */
+#dl {
+  position:relative; z-index:1;
+  padding:148px 56px 120px; text-align:center; overflow:hidden;
+}
+#dl::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 108%, rgba(109,40,217,.16) 0%, transparent 65%),
+    radial-gradient(ellipse at 50% -8%,  rgba(194,65,12,.08)  0%, transparent 55%);
+}
+.dl-cvs-w { display:flex; justify-content:center; margin-bottom:52px }
+#dl-cvs { display:block }
+.dl-title {
+  font-family:var(--fd);
+  font-size:clamp(2rem,6vw,5rem); font-weight:900; letter-spacing:.08em;
+  background:linear-gradient(90deg, var(--p5), var(--o5));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 40px rgba(139,92,246,.3));
+  margin-bottom:18px;
+}
+.dl-sub { font-size:.8rem; color:var(--t2); letter-spacing:.05em; margin-bottom:44px }
+.dl-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:22px }
+.dl-btn {
+  font-size:.64rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:12px 24px; border-radius:var(--r); cursor:none;
+  border:1px solid var(--b); color:var(--t2); background:var(--sf);
+  display:flex; align-items:center; gap:10px;
+  transition:transform .2s, border-color .2s, color .2s, background .2s, box-shadow .2s;
+}
+.dl-btn:hover {
+  transform:translateY(-2px); border-color:var(--p4);
+  color:var(--t); background:rgba(139,92,246,.09);
+  box-shadow:0 0 16px rgba(139,92,246,.2);
+}
+.dl-btn-p {
+  background:linear-gradient(135deg, var(--p3), var(--o4));
+  border-color:transparent; color:#fff;
+}
+.dl-btn-p:hover {
+  background:linear-gradient(135deg, var(--p3), var(--o4));
+  border-color:transparent; opacity:.88;
+  box-shadow:0 0 28px rgba(109,40,217,.5), 0 0 10px rgba(234,88,12,.3);
+}
+.dl-note { font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--t3) }
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+footer {
+  border-top:1px solid var(--b); padding:44px 56px;
+  display:flex; justify-content:space-between; align-items:center;
+  position:relative; z-index:1;
+}
+.f-logo {
+  font-family:var(--fd); font-size:.88rem; font-weight:700; letter-spacing:.2em;
+  background:linear-gradient(90deg, var(--p5), var(--o5));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.f-copy { font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--t3) }
+.f-links { display:flex; gap:28px; list-style:none }
+.f-links a {
+  font-size:.58rem; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--t3); transition:color .2s;
+}
+.f-links a:hover { color:var(--t) }
+
+/* ── HERO ENTRANCE ──────────────────────────── */
+.hero-inner > * { animation:fadeUp .9s ease backwards }
+.hero-kicker { animation-delay:.08s }
+.hero-title   { animation-delay:.26s }
+.hero-sub     { animation-delay:.44s }
+.hero-btns    { animation-delay:.60s }
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width:1024px) {
+  .what-g,.how-g { grid-template-columns:1fr; gap:48px }
+  .users-g { grid-template-columns:repeat(2,1fr) }
+  .blog-g,.prices-g { grid-template-columns:repeat(2,1fr) }
+  .n-links { display:none }
+}
+@media (max-width:768px) {
+  .sec { padding:80px 24px }
+  #nav { padding:0 24px }
+  .users-g,.blog-g,.prices-g { grid-template-columns:1fr }
+  .hero-btns { flex-direction:column; align-items:center }
+  footer { flex-direction:column; gap:20px; text-align:center }
+  #dl { padding:100px 24px 80px }
+  .dl-btns { flex-direction:column; align-items:center }
+}
+
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  NAV                             ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<nav id="nav">
+  <span class="n-logo">DESERAQ</span>
+  <ul class="n-links">
+    <li><a href="#what">What is Deseraq?</a></li>
+    <li><a href="#how">How to Use</a></li>
+    <li><a href="#users">Users</a></li>
+    <li><a href="#blog">Blog</a></li>
+    <li><a href="#prices">Prices</a></li>
+  </ul>
+  <button class="n-cta" id="nav-dl">Download</button>
+</nav>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  HERO                            ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section id="hero">
+  <canvas id="hero-cvs"></canvas>
+  <div class="hero-inner">
+    <div class="hero-kicker">Design Tool for Designers</div>
+    <h1 class="hero-title">DESERAQ</h1>
+    <p class="hero-sub">Vector-native. Designer-first. Zero compromise.</p>
+    <div class="hero-btns">
+      <button class="btn-p">Request Early Access</button>
+      <button class="btn-o">See It in Action</button>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="s-line"></div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  01 · WHAT IS DESERAQ            ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section class="sec" id="what">
+  <div class="sh fu">
+    <span class="sn">01 / What is Deseraq?</span>
+    <h2 class="st"><span class="gt">The design tool that</span><br>thinks like you do.</h2>
+  </div>
+  <div class="what-g">
+    <div class="fu">
+      <p class="what-big">Deseraq is a new class of design software — built natively for graphic designers who demand precision, speed, and creative freedom in the same breath.</p>
+      <p class="what-body">No bloated workspaces. No engineer-first abstractions. Just a clean, responsive canvas that adapts to the way you already think. Deseraq understands vector geometry, typographic rhythm, and color systems at the engine level — not as plugins bolted on after the fact.</p>
+      <div class="pills">
+        <span class="pill">Vector-Native Engine</span>
+        <span class="pill">Real-Time Collab</span>
+        <span class="pill">Asset Intelligence</span>
+        <span class="pill">Export Anywhere</span>
+        <span class="pill">Color System-Aware</span>
+        <span class="pill">Type-First Layout</span>
+      </div>
+    </div>
+    <div class="what-vis fu" style="transition-delay:.18s">
+      <!-- Oscillation Particle Animation -->
+      <svg id="osc-svg" viewBox="-500 -300 1000 600">
+        <path id="osc-ln" fill="none" stroke="#a040ff" stroke-width="4"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="filter:drop-shadow(0 0 5px #a040ff) drop-shadow(0 0 14px #8030d0) drop-shadow(0 0 32px rgba(96,16,192,.5))"></path>
+        <circle id="osc-pt" r="10" fill="white"
+          style="filter:drop-shadow(0 0 8px #fff) drop-shadow(0 0 22px rgba(167,139,250,.95))"></circle>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<div class="sep-w"><hr class="sep"></div>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  02 · HOW TO USE                 ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section class="sec" id="how">
+  <div class="sh fu">
+    <span class="sn">02 / How to Use</span>
+    <h2 class="st"><span class="gt">From open to export</span><br>in three steps.</h2>
+  </div>
+  <div class="how-g">
+    <div class="how-vis fu">
+      <!-- Hexagon Rotating Animation -->
+      <canvas id="hex-cvs"></canvas>
+    </div>
+    <div class="steps fu" style="transition-delay:.2s">
+      <div class="step">
+        <span class="step-n">01 /</span>
+        <div class="step-b">
+          <h3>Open a Canvas</h3>
+          <p>Start blank or import existing assets — SVG, AI, PDF, or a full brand kit. Deseraq reads everything without conversion artifacts or lost paths.</p>
+        </div>
+      </div>
+      <div class="s-div"></div>
+      <div class="step">
+        <span class="step-n">02 /</span>
+        <div class="step-b">
+          <h3>Design Freely</h3>
+          <p>Boolean ops, live type systems, component overrides, and constraint-based layout all live in the same gesture. No context switching, no modal hell.</p>
+        </div>
+      </div>
+      <div class="s-div"></div>
+      <div class="step">
+        <span class="step-n">03 /</span>
+        <div class="step-b">
+          <h3>Export and Ship</h3>
+          <p>One-click export to SVG, PDF, PNG, WebP, or handoff packages. Deseraq's export engine respects your grid, your scale, and your bleed — every time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep-w"><hr class="sep"></div>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  03 · USERS                      ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section class="sec" id="users">
+  <div class="sh fu">
+    <span class="sn">03 / Users</span>
+    <h2 class="st"><span class="gt">Built for every designer.</span><br>Mastered by the best.</h2>
+  </div>
+  <div class="users-g">
+    <div class="u-card fu">
+      <div class="u-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+      </div>
+      <h3>Brand Designers</h3>
+      <p>From logo systems to full brand identities. Color tokens, component libraries, and scale-aware export built in from day one.</p>
+    </div>
+    <div class="u-card fu" style="transition-delay:.1s">
+      <div class="u-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3m-3.54-6.46-2.12 2.12m-8.48 8.48-2.12 2.12m0-12.72 2.12 2.12m8.48 8.48 2.12 2.12"/></svg>
+      </div>
+      <h3>Motion Artists</h3>
+      <p>Animate paths, morph shapes, export to Lottie or video. Deseraq's motion layer works with your vectors, not against them.</p>
+    </div>
+    <div class="u-card fu" style="transition-delay:.2s">
+      <div class="u-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <h3>UI / UX Designers</h3>
+      <p>Prototype at full fidelity, hand off with pixel-precise specs. Dev mode speaks your engineer's language — natively.</p>
+    </div>
+    <div class="u-card fu" style="transition-delay:.3s">
+      <div class="u-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+      </div>
+      <h3>Freelancers</h3>
+      <p>One tool for all your client work. Present, iterate, and deliver — without juggling three apps and two subscription fees.</p>
+    </div>
+  </div>
+</section>
+
+<div class="sep-w"><hr class="sep"></div>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  04 · BLOG                       ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section class="sec" id="blog">
+  <div class="sh fu">
+    <span class="sn">04 / Blog</span>
+    <h2 class="st"><span class="gt">From the studio.</span></h2>
+  </div>
+  <div class="blog-g">
+    <div class="b-card fu">
+      <div class="b-thumb b-t1"><span class="b-tag">Engineering</span></div>
+      <div class="b-body">
+        <p class="b-date">June 2025</p>
+        <h3 class="b-title">The future of vector tooling — and why Béziers still matter</h3>
+        <p class="b-ex">We revisit what made the PostScript era revolutionary and why the best new design tools are learning from it, not running from it.</p>
+      </div>
+    </div>
+    <div class="b-card fu" style="transition-delay:.12s">
+      <div class="b-thumb b-t2"><span class="b-tag">Behind the Build</span></div>
+      <div class="b-body">
+        <p class="b-date">May 2025</p>
+        <h3 class="b-title">How we rebuilt Deseraq's color engine from scratch</h3>
+        <p class="b-ex">Perceptual uniformity, gamut mapping, and why we scrapped our first implementation at 80% complete.</p>
+      </div>
+    </div>
+    <div class="b-card fu" style="transition-delay:.24s">
+      <div class="b-thumb b-t3"><span class="b-tag">Designer Stories</span></div>
+      <div class="b-body">
+        <p class="b-date">April 2025</p>
+        <h3 class="b-title">What does your workflow actually look like? We asked 40 designers.</h3>
+        <p class="b-ex">Most designers are still fighting their tools, not partnering with them. Deseraq was built to change that.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep-w"><hr class="sep"></div>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  05 · PRICES                     ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section class="sec" id="prices">
+  <div class="sh fu">
+    <span class="sn">05 / Prices</span>
+    <h2 class="st"><span class="gt">One tool.</span><br>No compromises.</h2>
+  </div>
+  <div class="prices-g">
+    <div class="p-card fu">
+      <p class="p-name">Starter</p>
+      <div class="p-amt"><span class="am">$0</span><span class="per"> / forever</span></div>
+      <p class="p-desc">Everything you need to explore Deseraq. No credit card, no time limit.</p>
+      <ul class="p-feats">
+        <li>3 active projects</li>
+        <li>Full vector canvas access</li>
+        <li>SVG and PNG export</li>
+        <li>Community support</li>
+      </ul>
+      <a href="#" class="p-btn p-btn-o">Get Started Free</a>
+    </div>
+    <div class="p-card feat fu" style="transition-delay:.12s">
+      <span class="p-badge">Most popular</span>
+      <p class="p-name">Studio</p>
+      <div class="p-amt"><span class="am">$18</span><span class="per"> / month</span></div>
+      <p class="p-desc">The full Deseraq experience — unlimited projects, all formats, real-time collaboration.</p>
+      <ul class="p-feats">
+        <li>Unlimited projects</li>
+        <li>All exports — SVG, PDF, WebP, Lottie</li>
+        <li>Real-time collaboration</li>
+        <li>Asset library sync</li>
+        <li>Version history (90 days)</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#" class="p-btn p-btn-f">Start Free Trial</a>
+    </div>
+    <div class="p-card fu" style="transition-delay:.24s">
+      <p class="p-name">Enterprise</p>
+      <div class="p-amt"><span class="am" style="font-size:2rem;line-height:1.3">Custom</span></div>
+      <p class="p-desc">For studios, agencies, and in-house teams that need control, compliance, and scale.</p>
+      <ul class="p-feats">
+        <li>Everything in Studio</li>
+        <li>White-label export</li>
+        <li>SSO &amp; advanced permissions</li>
+        <li>Dedicated account manager</li>
+        <li>Unlimited version history</li>
+        <li>SLA guarantee</li>
+      </ul>
+      <a href="#" class="p-btn p-btn-o">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  06 · DOWNLOAD                   ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<section id="dl">
+  <span class="sn" style="display:block;margin-bottom:44px;position:relative;z-index:1">06 / Download</span>
+  <div class="dl-cvs-w" style="position:relative;z-index:1">
+    <!-- Hex Logo Reveal Animation -->
+    <canvas id="dl-cvs" width="380" height="280"></canvas>
+  </div>
+  <div style="position:relative;z-index:1">
+    <h2 class="dl-title">Get Deseraq</h2>
+    <p class="dl-sub">Available now for macOS. Windows and Linux arriving in 2025.</p>
+    <div class="dl-btns">
+      <button class="dl-btn dl-btn-p">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        macOS — Apple Silicon
+      </button>
+      <button class="dl-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        macOS — Intel
+      </button>
+      <button class="dl-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        Windows (Beta)
+      </button>
+    </div>
+    <p class="dl-note">Version 0.9.1 Early Access &nbsp;·&nbsp; Requires macOS 13+ or Windows 11</p>
+  </div>
+</section>
+
+<footer>
+  <span class="f-logo">DESERAQ</span>
+  <p class="f-copy">© 2025 Deseraq. All rights reserved.</p>
+  <ul class="f-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">X / Twitter</a></li>
+  </ul>
+</footer>
+
+<script>
+/* ─────────────────────────────────────────────
+   CURSOR
+───────────────────────────────────────────── */
+const cur  = document.getElementById('cur');
+const curR = document.getElementById('cur-r');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px';
+  cur.style.top  = my + 'px';
+});
+(function loop(){
+  rx += (mx - rx) * .1;
+  ry += (my - ry) * .1;
+  curR.style.left = rx + 'px';
+  curR.style.top  = ry + 'px';
+  requestAnimationFrame(loop);
+})();
+
+/* ─────────────────────────────────────────────
+   NAV + SCROLL
+───────────────────────────────────────────── */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('sc', window.scrollY > 20);
+});
+document.getElementById('nav-dl').addEventListener('click', () => {
+  document.getElementById('dl').scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ─────────────────────────────────────────────
+   FADE-UP OBSERVER
+───────────────────────────────────────────── */
+new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, { threshold: .11 }).observe.bind(
+  new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: .11 })
+);
+
+// Simpler approach:
+const fuObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, { threshold: .11 });
+document.querySelectorAll('.fu').forEach(el => fuObs.observe(el));
+
+/* ─────────────────────────────────────────────
+   MAGNETIC BUTTONS
+───────────────────────────────────────────── */
+document.querySelectorAll('.btn-p,.btn-o,.n-cta,.dl-btn,.p-btn').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r  = btn.getBoundingClientRect();
+    const dx = e.clientX - r.left  - r.width  / 2;
+    const dy = e.clientY - r.top   - r.height / 2;
+    btn.style.transform = `translate(${dx * .13}px, ${dy * .13}px)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
+
+/* ═══════════════════════════════════════════════
+   HERO — PARTICLE GRAVITY
+   Purple + Orange mixed particles orbit cursor.
+═══════════════════════════════════════════════ */
+(function heroParticles() {
+  const cvs = document.getElementById('hero-cvs');
+  const c   = cvs.getContext('2d');
+
+  function resize() {
+    cvs.width  = cvs.offsetWidth;
+    cvs.height = cvs.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const mouse = { x: -1e5, y: -1e5, r: 185 };
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave', () => { mouse.x = -1e5; mouse.y = -1e5; });
+
+  class Particle {
+    constructor() {
+      this.reset();
+      // scatter on init
+      this.x = Math.random() * cvs.width;
+      this.y = Math.random() * cvs.height;
+    }
+    reset() {
+      this.hx  = Math.random() * cvs.width;
+      this.hy  = Math.random() * cvs.height;
+      this.x   = this.hx;
+      this.y   = this.hy;
+      this.sz  = 1.6 + Math.random() * 1.1;
+      this.a   = Math.random() * Math.PI * 2;
+      this.or  = 13 + Math.random() * 34;
+      const isOrange = Math.random() < .32;
+      this.col  = isOrange ? '#F97316' : (Math.random() < .5 ? '#8B5CF6' : '#A78BFA');
+      this.glow = isOrange ? '#EA580C' : '#6D28D9';
+    }
+    update() {
+      const dx = mouse.x - this.x;
+      const dy = mouse.y - this.y;
+      const d  = Math.hypot(dx, dy);
+      if (d < mouse.r) {
+        this.a += .01 + (45 - this.or) * .0014;
+        const tx = mouse.x + Math.cos(this.a) * this.or;
+        const ty = mouse.y + Math.sin(this.a) * this.or;
+        this.x += (tx - this.x) * .09;
+        this.y += (ty - this.y) * .09;
+      } else {
+        this.x += (this.hx - this.x) * .03;
+        this.y += (this.hy - this.y) * .03;
+      }
+    }
+    draw() {
+      c.beginPath();
+      c.arc(this.x, this.y, this.sz, 0, Math.PI * 2);
+      c.shadowBlur  = 8;
+      c.shadowColor = this.glow;
+      c.fillStyle   = this.col;
+      c.fill();
+    }
+  }
+
+  const pts = [];
+  for (let i = 0; i < 210; i++) pts.push(new Particle());
+
+  function frame() {
+    c.fillStyle = '#050008';
+    c.fillRect(0, 0, cvs.width, cvs.height);
+
+    // Ambient center pulse
+    const g = c.createRadialGradient(
+      cvs.width / 2, cvs.height / 2, 0,
+      cvs.width / 2, cvs.height / 2, cvs.width * .44
+    );
+    g.addColorStop(0, 'rgba(109,40,217,.075)');
+    g.addColorStop(1, 'transparent');
+    c.fillStyle = g;
+    c.fillRect(0, 0, cvs.width, cvs.height);
+
+    for (const p of pts) { p.update(); p.draw(); }
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ═══════════════════════════════════════════════
+   WHAT IS DESERAQ — OSCILLATION PARTICLE
+   Chaotic wave collapses into circle on hover.
+═══════════════════════════════════════════════ */
+(function oscillation() {
+  const svg = document.getElementById('osc-svg');
+  const ln  = document.getElementById('osc-ln');
+  const pt  = document.getElementById('osc-pt');
+  if (!svg || !ln || !pt) return;
+
+  const N   = 250;
+  const CAP = 62;
+  let mX = 9e4, mY = 9e4;
+  let captured = false, coherence = 0;
+  let spd = .18, pos = 0;
+
+  svg.addEventListener('mousemove', e => {
+    const p = svg.createSVGPoint();
+    p.x = e.clientX; p.y = e.clientY;
+    const t = p.matrixTransform(svg.getScreenCTM().inverse());
+    mX = t.x; mY = t.y;
+  });
+  svg.addEventListener('mouseleave', () => { mX = 9e4; mY = 9e4; });
+
+  function frame(t) {
+    coherence += ((captured ? 1 : 0) - coherence) * .06;
+    let d = '';
+
+    for (let i = 0; i < N; i++) {
+      const u = i / (N - 1);
+
+      const cx = (u - .5) * 700 + 50 * Math.sin(u * 11 + t * .0022);
+      const cy = 90 * Math.sin(u * 8 + t * .0015)
+               + 60 * Math.cos(u * 13 - t * .0018)
+               + 40 * Math.sin(u * 21 + t * .0029);
+
+      const ang = u * Math.PI * 2;
+      const r   = 150 + 15 * Math.sin(8 * ang + t * .003) + 8 * Math.cos(5 * ang - t * .002);
+      const ex  = r * Math.cos(ang);
+      const ey  = r * Math.sin(ang);
+
+      const x = cx * (1 - coherence) + ex * coherence;
+      const y = cy * (1 - coherence) + ey * coherence;
+
+      d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+    }
+    if (coherence > .95) d += ' Z';
+    ln.setAttribute('d', d);
+
+    spd += ((captured ? 0 : .18) - spd) * .02;
+
+    const tLen = ln.getTotalLength();
+    if (tLen > 0) {
+      pos = (pos + spd) % tLen;
+      const { x, y } = ln.getPointAtLength(pos);
+      pt.setAttribute('cx', x);
+      pt.setAttribute('cy', y);
+    }
+    pt.setAttribute('r', 10 + 3 * Math.sin(t * .01));
+
+    const px = parseFloat(pt.getAttribute('cx') || 0);
+    const py = parseFloat(pt.getAttribute('cy') || 0);
+    captured = Math.hypot(mX - px, mY - py) < CAP;
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ═══════════════════════════════════════════════
+   HOW TO USE — HEXAGON ROTATING PRISM
+   Mouse left/right controls rotation direction.
+═══════════════════════════════════════════════ */
+(function hexPrism() {
+  const cvs = document.getElementById('hex-cvs');
+  if (!cvs) return;
+  const c = cvs.getContext('2d');
+
+  function resize() {
+    const r    = cvs.parentElement.getBoundingClientRect();
+    cvs.width  = r.width  || 400;
+    cvs.height = r.height || r.width || 400;
+  }
+  resize();
+  new ResizeObserver(resize).observe(cvs.parentElement);
+  window.addEventListener('resize', resize);
+
+  // Purple-dominant palette with orange highlights
+  const COLS = ['#5B21B6','#7C3AED','#8B5CF6','#A78BFA','#8B5CF6','#8B5CF6','#F97316'];
+  let rotDir = 1;
+  window.addEventListener('mousemove', e => {
+    rotDir = e.clientX > window.innerWidth / 2 ? 1 : -1;
+  });
+
+  const RAD = 120, DEPTH = 110, PPE = 11;
+  const front = [], back = [], parts = [];
+
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI * 2 / 6) * i - Math.PI / 6;
+    front.push({ x: Math.cos(a) * RAD, y: Math.sin(a) * RAD, z:  DEPTH / 2 });
+    back.push({  x: Math.cos(a) * RAD, y: Math.sin(a) * RAD, z: -DEPTH / 2 });
+  }
+
+  function addEdge(a, b) {
+    for (let i = 0; i <= PPE; i++) {
+      const t = i / PPE;
+      parts.push({
+        x: a.x + (b.x - a.x) * t,
+        y: a.y + (b.y - a.y) * t,
+        z: a.z + (b.z - a.z) * t,
+        col: COLS[Math.floor(Math.random() * COLS.length)]
+      });
+    }
+  }
+  for (let i = 0; i < 6; i++) {
+    addEdge(front[i], front[(i + 1) % 6]);
+    addEdge(back[i],  back[(i + 1) % 6]);
+    addEdge(front[i], back[i]);
+  }
+
+  let ry = 0;
+  const rx = -.35;
+  const rotY = (x, z, a) => ({ x: x*Math.cos(a)-z*Math.sin(a), z: x*Math.sin(a)+z*Math.cos(a) });
+  const rotX = (y, z, a) => ({ y: y*Math.cos(a)-z*Math.sin(a), z: y*Math.sin(a)+z*Math.cos(a) });
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (cvs.width === 0) return;
+    c.clearRect(0, 0, cvs.width, cvs.height);
+    ry += .012 * rotDir;
+
+    const list = parts.map(p => {
+      const Y  = rotY(p.x, p.z, ry);
+      const X  = rotX(p.y, Y.z, rx);
+      const sc = 900 / (900 + X.z + 300);
+      const dn = (X.z + 300) / 600;
+      return {
+        x: cvs.width  / 2 + Y.x * sc,
+        y: cvs.height / 2 + X.y * sc,
+        z: X.z,
+        alpha: .14 + dn * .86,
+        col:   p.col
+      };
+    });
+
+    list.sort((a, b) => a.z - b.z);
+    for (const p of list) {
+      c.globalAlpha = p.alpha;
+      c.beginPath();
+      c.arc(p.x, p.y, 1.9, 0, Math.PI * 2);
+      c.fillStyle = p.col;
+      c.fill();
+    }
+    c.globalAlpha = 1;
+  }
+  frame();
+})();
+
+/* ═══════════════════════════════════════════════
+   DOWNLOAD — HEX LOGO REVEAL
+   Draws the Deseraq mark stroke-by-stroke,
+   colour-shifts from blue → purple → orange,
+   settles into brand purple with orange glow.
+   Triggered when section scrolls into view.
+═══════════════════════════════════════════════ */
+(function hexReveal() {
+  const cvs = document.getElementById('dl-cvs');
+  if (!cvs) return;
+  const c = cvs.getContext('2d');
+
+  const pts = [
+    { x:-140, y:-70 }, // 0
+    { x:-140, y: 38 }, // 1
+    { x: -82, y:132 }, // 2
+    { x:  44, y:132 }, // 3
+    { x: 106, y: 38 }, // 4
+    { x:  44, y:-70 }, // 5
+    { x: -82, y:-70 }  // 6
+  ];
+
+  const SEG   = 600;
+  const BUILD = (pts.length - 1) * SEG;
+  const ENERGY= 900;
+  const OSC   = 300;
+
+  const BLUE  = [120, 220, 255];
+  const PURP  = [170,  80, 255];
+  const ORA   = [255, 125,   0];
+  const RED   = [255,  35,  35];
+
+  // Final brand colors
+  const FINAL_S = [139,  92, 246];
+  const FINAL_G = [249, 115,  22];
+
+  let t0 = null, running = false;
+
+  const lerp   = (a, b, t) => a + (b - a) * t;
+  const mix    = (a, b, t) => [lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)];
+  const toRgb  = v => `rgb(${v[0]|0},${v[1]|0},${v[2]|0})`;
+  const cl01   = v => Math.max(0, Math.min(1, v));
+
+  // Cumulative lengths for wave positioning
+  const cum = [0];
+  for (let i = 1; i < pts.length; i++) {
+    cum[i] = cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
+  }
+  const totLen = cum[cum.length-1];
+
+  function dot(x, y, col, r) {
+    c.save(); c.fillStyle = col;
+    c.beginPath(); c.arc(x, y, r || 5.2, 0, Math.PI*2); c.fill(); c.restore();
+  }
+  function arrow(x, y, ang, col) {
+    c.save(); c.translate(x, y); c.rotate(ang);
+    c.fillStyle = col;
+    c.beginPath(); c.moveTo(18,0); c.lineTo(-8,8); c.lineTo(-2,0); c.lineTo(-8,-8);
+    c.closePath(); c.fill(); c.restore();
+  }
+
+  function draw(now) {
+    if (!running) return;
+    if (!t0) t0 = now;
+    const el    = now - t0;
+    const done  = el >= BUILD;
+    const ee    = el - BUILD;
+    const edone = ee >= ENERGY;
+
+    c.clearRect(0, 0, cvs.width, cvs.height);
+
+    // Color progression: Blue → Purple → Orange → Red → Brand Purple
+    let sc = BLUE, gc = [120, 220, 255];
+    if (done && !edone) {
+      const t = cl01(ee / ENERGY);
+      if      (t < .33) { sc = mix(BLUE, PURP, t / .33);          gc = sc; }
+      else if (t < .66) { sc = mix(PURP, ORA,  (t-.33)/.33);      gc = sc; }
+      else              { sc = mix(ORA,  RED,   (t-.66)/.34);
+                          gc = mix(ORA, [255,160,0], (t-.66)/.34); }
+    }
+    if (edone) { sc = FINAL_S; gc = FINAL_G; }
+
+    const ss = toRgb(sc), gs = toRgb(gc);
+
+    const seg  = el / SEG;
+    const fSeg = Math.floor(seg);
+    const par  = cl01(seg - fSeg);
+
+    c.save();
+    // Centre the mark in canvas — offset accounts for asymmetric shape
+    c.translate(cvs.width / 2 + 17, cvs.height / 2 - 16);
+    c.lineWidth   = 4;
+    c.lineCap     = 'round';
+    c.lineJoin    = 'round';
+    c.strokeStyle = ss;
+    c.shadowColor = gs;
+    c.shadowBlur  = done ? 22 : 14;
+    c.beginPath();
+
+    let started = false, ax = pts[0].x, ay = pts[0].y, aa = 0;
+
+    for (let i = 0; i < pts.length - 1; i++) {
+      const A = pts[i], B = pts[i+1];
+      const vt = i < fSeg ? 1 : i === fSeg ? par : 0;
+      if (vt <= 0) break;
+
+      for (let s = 0; s <= 24; s++) {
+        const u = (s / 24) * vt;
+        let x = lerp(A.x, B.x, u);
+        let y = lerp(A.y, B.y, u);
+
+        // Short oscillation burst right after build completes
+        if (done && !edone && ee <= OSC) {
+          const tt  = ee / OSC;
+          const amp = 18 * Math.sin(Math.PI * tt) * Math.exp(-.8 * tt);
+          const ph  = tt * 28;
+          const dx  = B.x - A.x, dy = B.y - A.y;
+          const len = Math.hypot(dx, dy) || 1;
+          const nx  = -dy / len, ny = dx / len;
+          const pp  = (cum[i] + Math.hypot(dx, dy) * u) / totLen;
+          const w   = Math.sin(pp * 20 - ph) * amp;
+          x += nx * w; y += ny * w;
+        }
+
+        if (!started) { c.moveTo(x, y); started = true; }
+        else          { c.lineTo(x, y); }
+      }
+
+      if      (i < fSeg)  { ax = B.x; ay = B.y; aa = Math.atan2(B.y-A.y, B.x-A.x); }
+      else if (i === fSeg){ ax = lerp(A.x,B.x,par); ay = lerp(A.y,B.y,par); aa = Math.atan2(B.y-A.y, B.x-A.x); }
+    }
+    c.stroke();
+
+    // Vertex dots
+    const nv = Math.min(fSeg + 1, pts.length);
+    const dr = (done && !edone && ee <= OSC) ? 5.8 : 5.2;
+    for (let i = 0; i < nv; i++) dot(pts[i].x, pts[i].y, ss, dr);
+
+    // Leading arrow
+    if (done) {
+      const last = pts[pts.length-1], prev = pts[pts.length-2];
+      arrow(last.x, last.y, Math.atan2(last.y-prev.y, last.x-prev.x), ss);
+    } else {
+      arrow(ax, ay, aa, ss);
+    }
+
+    c.restore();
+    requestAnimationFrame(draw);
+  }
+
+  // Fire when download section enters viewport
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !running) {
+        running = true; t0 = null;
+        requestAnimationFrame(draw);
+      }
+    });
+  }, { threshold: .25 }).observe(cvs);
+})();
+</script>
+</body>
+</html>
